@@ -9,7 +9,7 @@ handlers:
   static_dir: static
   
 - url: /.*
-  script: blinktestengine.app
+  script: main.app
 
 libraries:
 - name: jinja2

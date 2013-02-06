@@ -3,6 +3,8 @@ from blog import *
 class MainPage(webapp2.RequestHandler):
 	def get(self):
 		self.response.out.write("Hello ma'friend!")
+		self.response.out.write("""<br><a href="/blog">Blog</a>""")
+		self.response.out.write("""<br><a href="/rot13">Rot13</a>""")
 
 
 class Rot13Handler(BaseHandler):
