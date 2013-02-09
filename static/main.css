@@ -1,8 +1,7 @@
 body {
     position: relative;
-    font-family: Helvetica, Arial, sans-serif;
+    font-family: Raleway, Helvetica, Arial, sans-serif;
     font-size: 14px;
-
     width: 800px;
     margin: 0 auto;
     padding: 10px;
@@ -83,6 +82,7 @@ input[type=submit] {
     margin-bottom: 30px;
     text-decoration: none;
 }
+
 
 .post + .post {
     margin-top: 15px;

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link type="text/css" rel="stylesheet" href="/static/main.css" />
+
+  <title>WebApp2 Wiki</title>
+</head>
+
+<body>
+  <a href="/wiki" class="main-title">
+    Simple Stupid Wiki
+  </a>
+
+  <div class="login-area">
+    {% if user and page %}
+      {{user.username}} (<a class="login-link" href="/wiki/logout">logout</a> | <a class="login-link" href="/wiki/edit/{{page.title}}">newpost</a>)
+    {% else %}
+      <a class="login-link" href="/wiki/login">login</a>
+      |
+      <a class="login-link" href="/wiki/signup">signup</a>
+    {% endif %}
+  </div>
+
+  <div id="content">
+  {% block content %}
+  {% endblock %}
+  </div>
+</body>
+
+</html>
+

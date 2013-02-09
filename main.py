@@ -44,6 +44,6 @@ app = webapp2.WSGIApplication([('/', MainPage),
 								("/blog/signup", BlogSignup),
 								("/blog/login", BlogLogin),
 								("/blog/logout", BlogLogout),
-								("/blog/welcome", WelcomeHandler),
+								("/blog/welcome", BlogWelcome),
 								("/rot13", Rot13Handler)],
 								debug=True)

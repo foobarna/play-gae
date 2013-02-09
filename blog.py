@@ -1,18 +1,42 @@
 import re
-import jinja2
 import os
-import webapp2
 import cgi
+import sys
 import hashlib
+import urllib2
+import jinja2
+import webapp2
 from google.appengine.ext import db
+from xml.dom import minidom
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 								autoescape = True)
 
+GMAPS_URL = "http://maps.googleapis.com/maps/api/staticmap?size=380x260&sensor=false&"
+IP_URL = "http://api.hostip.info/?ip="
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASS_RE = re.compile(r"^.{6,20}$")
 EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
+
+def gmaps_img(points):
+	markers = "&" . join("markers=%s,%s" % (point.lat, point.lon) for point in points)
+	return GMAPS_URL + markers
+
+def get_coords(ip):
+	url = IP_URL + ip
+	content = None
+	try:
+		content = urllib2.urlopen(url).read()
+	except urllib2.URLError:
+		return
+	if content:
+		d = minidom.parseString(content)
+		coords = d.getElementsByTagName("gml:coordinates")
+		if coords and coords[0].childNodes[0].nodeValue:
+			lon, lat = coords[0].childNodes[0].nodeValue.split(",")
+			return db.GeoPt(lat, lon)
 
 def hash_str(s):
 	return hashlib.md5(s).hexdigest()
@@ -81,6 +105,7 @@ class User(db.Model):
 	username = db.StringProperty(required = True)
 	password = db.StringProperty(required = True)
 	email = db.StringProperty(required = False)
+	coords = db.GeoPtProperty()
 
 
 class BlogSignup(BaseHandler):
@@ -115,6 +140,9 @@ class BlogSignup(BaseHandler):
 		else:
 			password = hash_str(password)
 			user = User(username = username, password = password, email = email)
+			coords = get_coords(self.request.remote_addr)
+			if coords:
+				user.coords = coords
 			user.put()
 			user_id = user.key().id()
 			sec_val = make_secure_val(str(user_id))
@@ -156,11 +184,17 @@ class BlogLogout(BaseHandler):
 		self.redirect('/blog/signup')
 
 
-class WelcomeHandler(BaseHandler):
+class BlogWelcome(BaseHandler):
 	def get(self):
 		user = self.get_user();
 		if user:
-			self.render('blog_welcome.html', username = user.username, user = user)
+			users = db.GqlQuery("select * from User limit 20")
+			points = filter(None, (user.coords for user in users))
+			if points:
+				img_url = gmaps_img(points)
+			else:
+				img_url = None
+			self.render('blog_welcome.html', username = user.username, user = user, img_url = img_url)
 		else:
 			self.redirect('/blog/signup')
 			return
